@@ -60,15 +60,27 @@ class Api extends MY_Controller
 	{
 		$bulan = $this->input->post('bulan');
 		$tahun = $this->input->post('tahun');
-
+	
 		$data = $this->TransaksiModel->getPengeluaranByBulanTahun($bulan, $tahun);
-
-		if ($data) {
-			$this->ResAPI($data, true, 'Data retrieved successfully', 200);
+	
+		// Ambil total biaya admin dan ongkir dari tabel transaksi
+		$transaksiSummary = $this->TransaksiModel->getTotalAdminOngkir($bulan, $tahun);
+	
+		$response = [
+			'pengeluaran_tambahan' => $data,
+			'total_admin' => (int) $transaksiSummary->total_admin,
+			'total_ongkir' => (int) $transaksiSummary->total_ongkir,
+			'total_admin_rupiah' => 'Rp' . number_format($transaksiSummary->total_admin, 0, ',', '.'),
+			'total_ongkir_rupiah' => 'Rp' . number_format($transaksiSummary->total_ongkir, 0, ',', '.')
+		];
+	
+		if ($data || $transaksiSummary) {
+			$this->ResAPI($response, true, 'Data retrieved successfully', 200);
 		} else {
 			$this->ResAPI([], false, 'Data not found', 404);
 		}
 	}
+	
 	public function tambahPengeluaran()
 	{
 		$bulan = $this->input->post('bulan');
@@ -260,15 +272,15 @@ class Api extends MY_Controller
 		return $this->ResAPI(['inserted' => count($items)], true, 'Import berhasil', 200);
 	}
 	public function rekap_tahunan()
-{
-    $tahun = $this->input->post('tahun');
+	{
+		$tahun = $this->input->post('tahun');
 
-    if (!$tahun) {
-        return $this->ResAPI([], false, 'Tahun wajib diisi', 400);
-    }
+		if (!$tahun) {
+			return $this->ResAPI([], false, 'Tahun wajib diisi', 400);
+		}
 
-    $data = $this->TransaksiModel->getRekapTahunan($tahun);
+		$data = $this->TransaksiModel->getRekapTahunan($tahun);
 
-    $this->ResAPI($data, true, 'Rekap tahunan berhasil diambil', 200);
-}
+		$this->ResAPI($data, true, 'Rekap tahunan berhasil diambil', 200);
+	}
 }

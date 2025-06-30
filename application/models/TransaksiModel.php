@@ -180,5 +180,14 @@ class TransaksiModel extends MY_Model
 		$rupiah = number_format(abs($angka), 0, ',', '.');
 		return ($angka < 0 ? '-Rp' : 'Rp') . $rupiah;
 	}
+	public function getTotalAdminOngkir($bulan, $tahun)
+	{
+		return $this->db->select('SUM(biaya_admin) as total_admin, SUM(ongkir) as total_ongkir')
+			->from('transaksi')
+			->where('bulan', $bulan)
+			->where('tahun', $tahun)
+			->get()
+			->row();
+	}
 
 }
