@@ -13,7 +13,7 @@ namespace org\bovigo\vfs;
  *
  * @group  issue_35
  */
-class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamWrapperQuotaTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * access to root
@@ -25,7 +25,7 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         $this->root = vfsStream::setup();
         vfsStream::setQuota(10);
@@ -96,10 +96,6 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
             $this->markTestSkipped('Requires PHP 5.4');
         }
 
-        if (strstr(PHP_VERSION, 'hiphop') !== false) {
-            $this->markTestSkipped('Not supported on hhvm');
-        }
-
         $fp = fopen(vfsStream::url('root/file.txt'), 'w+');
         $this->assertTrue(ftruncate($fp, 9));
         fclose($fp);
@@ -119,10 +115,6 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
     {
         if (version_compare(PHP_VERSION, '5.4.0', '<')) {
             $this->markTestSkipped('Requires PHP 5.4');
-        }
-
-        if (strstr(PHP_VERSION, 'hiphop') !== false) {
-            $this->markTestSkipped('Not supported on hhvm');
         }
 
         $fp = fopen(vfsStream::url('root/file.txt'), 'w+');
@@ -146,10 +138,6 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
             $this->markTestSkipped('Requires PHP 5.4');
         }
 
-        if (strstr(PHP_VERSION, 'hiphop') !== false) {
-            $this->markTestSkipped('Not supported on hhvm');
-        }
-
         $fp = fopen(vfsStream::url('root/file.txt'), 'w+');
         $this->assertTrue(ftruncate($fp, 11));
         fclose($fp);
@@ -169,10 +157,6 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
     {
         if (version_compare(PHP_VERSION, '5.4.0', '<')) {
             $this->markTestSkipped('Requires PHP 5.4');
-        }
-
-        if (strstr(PHP_VERSION, 'hiphop') !== false) {
-            $this->markTestSkipped('Not supported on hhvm');
         }
 
         vfsStream::newFile('bar.txt')
@@ -201,10 +185,6 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
             $this->markTestSkipped('Requires PHP 5.4');
         }
 
-        if (strstr(PHP_VERSION, 'hiphop') !== false) {
-            $this->markTestSkipped('Not supported on hhvm');
-        }
-
         vfsStream::newFile('bar.txt')
                  ->withContent('1234567890')
                  ->at(vfsStream::newDirectory('bar')
@@ -221,3 +201,4 @@ class vfsStreamWrapperQuotaTestCase extends \BC_PHPUnit_Framework_TestCase
         );
     }
 }
+?>

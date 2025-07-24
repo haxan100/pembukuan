@@ -28,22 +28,22 @@ class TestvfsStreamWrapper extends vfsStreamWrapper
 /**
  * Test for org\bovigo\vfs\vfsStreamWrapper.
  */
-class vfsStreamWrapperAlreadyRegisteredTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamWrapperAlreadyRegisteredTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         TestvfsStreamWrapper::unregister();
-        $mock = $this->bc_getMock('org\\bovigo\\vfs\\vfsStreamWrapper');
+        $mock = $this->getMock('org\\bovigo\\vfs\\vfsStreamWrapper');
         stream_wrapper_register(vfsStream::SCHEME, get_class($mock));
     }
 
     /**
      * clean up test environment
      */
-    public function tearDown(): void
+    public function tearDown()
     {
         TestvfsStreamWrapper::unregister();
     }
@@ -53,10 +53,11 @@ class vfsStreamWrapperAlreadyRegisteredTestCase extends \BC_PHPUnit_Framework_Te
      * registered for the vfs scheme should throw an exception
      *
      * @test
+     * @expectedException  org\bovigo\vfs\vfsStreamException
      */
     public function registerOverAnotherStreamWrapper()
     {
-        $this->expectException(vfsStreamException::class);
         vfsStreamWrapper::register();
     }
 }
+?>

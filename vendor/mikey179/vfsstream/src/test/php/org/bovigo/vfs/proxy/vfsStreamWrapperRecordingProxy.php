@@ -323,3 +323,4 @@ class vfsStreamWrapperRecordingProxy extends vfsStreamWrapper
         return parent::url_stat($path, $flags);
     }
 }
+?>

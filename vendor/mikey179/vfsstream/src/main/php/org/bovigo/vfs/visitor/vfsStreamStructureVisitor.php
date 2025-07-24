@@ -10,8 +10,6 @@
 namespace org\bovigo\vfs\visitor;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
-use org\bovigo\vfs\vfsStreamBlock;
-
 /**
  * Visitor which traverses a content structure recursively to create an array structure from it.
  *
@@ -52,18 +50,6 @@ class vfsStreamStructureVisitor extends vfsStreamAbstractVisitor
     public function visitFile(vfsStreamFile $file)
     {
         $this->current[$file->getName()] = $file->getContent();
-        return $this;
-    }
-
-    /**
-     * visit a block device and process it
-     *
-     * @param   vfsStreamBlock $block
-     * @return  vfsStreamStructureVisitor
-     */
-    public function visitBlockDevice(vfsStreamBlock $block)
-    {
-        $this->current['[' . $block->getName() . ']'] = $block->getContent();
         return $this;
     }
 
@@ -109,3 +95,4 @@ class vfsStreamStructureVisitor extends vfsStreamAbstractVisitor
         return $this;
     }
 }
+?>

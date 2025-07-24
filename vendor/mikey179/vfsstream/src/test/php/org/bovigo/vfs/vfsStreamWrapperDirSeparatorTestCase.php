@@ -14,7 +14,7 @@ namespace org\bovigo\vfs;
  * @since  0.9.0
  * @group  issue_8
  */
-class vfsStreamWrapperDirSeparatorTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamWrapperDirSeparatorTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * root diretory
@@ -26,7 +26,7 @@ class vfsStreamWrapperDirSeparatorTestCase extends \BC_PHPUnit_Framework_TestCas
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         $this->root = vfsStream::setup();
     }
@@ -53,20 +53,5 @@ class vfsStreamWrapperDirSeparatorTestCase extends \BC_PHPUnit_Framework_TestCas
         $this->assertTrue($this->root->getChild('dir')->hasChild('bar'));
         $this->assertTrue($this->root->getChild('dir/bar')->hasChild('foo'));
     }
-
-    /**
-     * @test
-     */
-    public function directoryExitsTestUsingTrailingWinDirSeparator()
-    {
-        $structure = array(
-            'dir' => array(
-                'bar' => array(
-                )
-            )
-        );
-        vfsStream::create($structure, $this->root);
-
-        $this->assertTrue(file_exists(vfsStream::url('root/').'dir\\'));
-    }
 }
+?>

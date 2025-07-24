@@ -14,7 +14,7 @@ namespace org\bovigo\vfs;
  * @since  0.9.0
  * @group  issue_5
  */
-class vfsStreamResolveIncludePathTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamResolveIncludePathTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * include path to restore after test run
@@ -26,7 +26,7 @@ class vfsStreamResolveIncludePathTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         $this->backupIncludePath = get_include_path();
         vfsStream::setup();
@@ -37,7 +37,7 @@ class vfsStreamResolveIncludePathTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * clean up test environment
      */
-    public function tearDown(): void
+    public function tearDown()
     {
         set_include_path($this->backupIncludePath);
     }
@@ -59,3 +59,4 @@ class vfsStreamResolveIncludePathTestCase extends \BC_PHPUnit_Framework_TestCase
         $this->assertFalse(@stream_resolve_include_path('path/unknownFile.php'));
     }
 }
+?>

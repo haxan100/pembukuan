@@ -10,7 +10,6 @@
 namespace org\bovigo\vfs\visitor;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
-use org\bovigo\vfs\vfsStreamBlock;
 /**
  * Test for org\bovigo\vfs\visitor\vfsStreamAbstractVisitor.
  *
@@ -18,7 +17,7 @@ use org\bovigo\vfs\vfsStreamBlock;
  * @see    https://github.com/mikey179/vfsStream/issues/10
  * @group  issue_10
  */
-class vfsStreamAbstractVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamAbstractVisitorTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * instance to test
@@ -30,20 +29,20 @@ class vfsStreamAbstractVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
-        $this->abstractVisitor = $this->bc_getMock('org\\bovigo\\vfs\\visitor\\vfsStreamAbstractVisitor',
+        $this->abstractVisitor = $this->getMock('org\\bovigo\\vfs\\visitor\\vfsStreamAbstractVisitor',
                                                 array('visitFile', 'visitDirectory')
                                  );
     }
 
     /**
      * @test
+     * @expectedException  \InvalidArgumentException
      */
     public function visitThrowsInvalidArgumentExceptionOnUnknownContentType()
     {
-        $this->expectException(\InvalidArgumentException::class);
-        $mockContent = $this->bc_getMock('org\\bovigo\\vfs\\vfsStreamContent');
+        $mockContent = $this->getMock('org\\bovigo\\vfs\\vfsStreamContent');
         $mockContent->expects($this->any())
                     ->method('getType')
                     ->will($this->returnValue('invalid'));
@@ -67,22 +66,6 @@ class vfsStreamAbstractVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
     }
 
     /**
-     * tests that a block device eventually calls out to visit file
-     *
-     * @test
-     */
-    public function visitWithBlockCallsVisitFile()
-    {
-        $block = new vfsStreamBlock('foo');
-        $this->abstractVisitor->expects($this->once())
-                              ->method('visitFile')
-                              ->with($this->equalTo($block));
-        $this->assertSame($this->abstractVisitor,
-                          $this->abstractVisitor->visit($block)
-        );
-    }
-
-    /**
      * @test
      */
     public function visitWithDirectoryCallsVisitDirectory()
@@ -96,3 +79,4 @@ class vfsStreamAbstractVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
         );
     }
 }
+?>

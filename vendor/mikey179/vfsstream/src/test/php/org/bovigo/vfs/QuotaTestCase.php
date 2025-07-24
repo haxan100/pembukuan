@@ -13,7 +13,7 @@ namespace org\bovigo\vfs;
  *
  * @group  issue_35
  */
-class QuotaTestCase extends \BC_PHPUnit_Framework_TestCase
+class QuotaTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * instance to test
@@ -25,7 +25,7 @@ class QuotaTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         $this->quota = new Quota(10);
     }
@@ -78,3 +78,4 @@ class QuotaTestCase extends \BC_PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->quota->spaceLeft(9));
     }
 }
+?>

@@ -13,7 +13,7 @@ namespace org\bovigo\vfs;
  *
  * @group  bug_18
  */
-class vfsStreamDirectoryIssue18TestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamDirectoryIssue18TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * access to root directory
@@ -25,7 +25,7 @@ class vfsStreamDirectoryIssue18TestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         $this->rootDirectory = vfsStream::newDirectory('/');
         $this->rootDirectory->addChild(vfsStream::newDirectory('var/log/app'));
@@ -78,3 +78,4 @@ class vfsStreamDirectoryIssue18TestCase extends \BC_PHPUnit_Framework_TestCase
         );
     }
 }
+?>

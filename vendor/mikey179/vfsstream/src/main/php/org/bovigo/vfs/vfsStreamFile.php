@@ -8,8 +8,6 @@
  * @package  org\bovigo\vfs
  */
 namespace org\bovigo\vfs;
-use org\bovigo\vfs\content\FileContent;
-use org\bovigo\vfs\content\StringBasedFileContent;
 /**
  * File container.
  *
@@ -18,23 +16,23 @@ use org\bovigo\vfs\content\StringBasedFileContent;
 class vfsStreamFile extends vfsStreamAbstractContent
 {
     /**
-     * content of the file
-     *
-     * @type  FileContent
-     */
-    private $content;
-    /**
-     * Resource id which exclusively locked this file
+     * the real content of the file
      *
      * @type  string
      */
-    protected $exclusiveLock;
+    protected $content;
     /**
-     * Resources ids which currently holds shared lock to this file
+     * amount of read bytes
      *
-     * @type  bool[string]
+     * @type  int
      */
-    protected $sharedLock = array();
+    protected $bytes_read = 0;
+    /**
+     * current lock status of file
+     *
+     * @type  int
+     */
+    protected $lock       = LOCK_UN;
 
     /**
      * constructor
@@ -44,8 +42,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function __construct($name, $permissions = null)
     {
-        $this->content = new StringBasedFileContent('');
-        $this->type    = vfsStreamContent::TYPE_FILE;
+        $this->type = vfsStreamContent::TYPE_FILE;
         parent::__construct($name, $permissions);
     }
 
@@ -89,20 +86,12 @@ class vfsStreamFile extends vfsStreamAbstractContent
      * Setting content with this method does not change the time when the file
      * was last modified.
      *
-     * @param   string]FileContent  $content
+     * @param   string  $content
      * @return  vfsStreamFile
-     * @throws  \InvalidArgumentException
      */
     public function withContent($content)
     {
-        if (is_string($content)) {
-            $this->content = new StringBasedFileContent($content);
-        } elseif ($content instanceof FileContent) {
-            $this->content = $content;
-        } else {
-            throw new \InvalidArgumentException('Given content must either be a string or an instance of org\bovigo\vfs\content\FileContent');
-        }
-
+        $this->content = $content;
         return $this;
     }
 
@@ -116,7 +105,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function getContent()
     {
-        return $this->content->content();
+        return $this->content;
     }
 
     /**
@@ -126,7 +115,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function open()
     {
-        $this->content->seek(0, SEEK_SET);
+        $this->seek(0, SEEK_SET);
         $this->lastAccessed = time();
     }
 
@@ -137,7 +126,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function openForAppend()
     {
-        $this->content->seek(0, SEEK_END);
+        $this->seek(0, SEEK_END);
         $this->lastAccessed = time();
     }
 
@@ -149,7 +138,7 @@ class vfsStreamFile extends vfsStreamAbstractContent
     public function openWithTruncate()
     {
         $this->open();
-        $this->content->truncate(0);
+        $this->content      = '';
         $time               = time();
         $this->lastAccessed = $time;
         $this->lastModified = $time;
@@ -165,8 +154,10 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function read($count)
     {
+        $data = substr($this->content, $this->bytes_read, $count);
+        $this->bytes_read  += $count;
         $this->lastAccessed = time();
-        return $this->content->read($count);
+        return $data;
     }
 
     /**
@@ -175,12 +166,11 @@ class vfsStreamFile extends vfsStreamAbstractContent
      * Using this method changes the time when the file was last accessed.
      *
      * @return  string
-     * @deprecated  since 1.3.0
      */
     public function readUntilEnd()
     {
         $this->lastAccessed = time();
-        return $this->content->readUntilEnd();
+        return substr($this->content, $this->bytes_read);
     }
 
     /**
@@ -189,12 +179,15 @@ class vfsStreamFile extends vfsStreamAbstractContent
      * Using this method changes the time when the file was last modified.
      *
      * @param   string  $data
-     * @return  int amount of written bytes
+     * @return  amount of written bytes
      */
     public function write($data)
     {
+        $dataLen            = strlen($data);
+        $this->content      = substr($this->content, 0, $this->bytes_read) . $data . substr($this->content, $this->bytes_read + $dataLen);
+        $this->bytes_read  += $dataLen;
         $this->lastModified = time();
-        return $this->content->write($data);
+        return $dataLen;
     }
 
     /**
@@ -204,9 +197,14 @@ class vfsStreamFile extends vfsStreamAbstractContent
      * @return  bool
      * @since   1.1.0
      */
-    public function truncate($size)
-    {
-        $this->content->truncate($size);
+    public function truncate($size) {
+        if ($size > $this->size()) {
+            // Pad with null-chars if we're "truncating up"
+            $this->setContent($this->getContent() . str_repeat("\0", $size - $this->size()));
+        } else {
+            $this->setContent(substr($this->getContent(), 0, $size));
+        }
+
         $this->lastModified = time();
         return true;
     }
@@ -218,18 +216,17 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function eof()
     {
-        return $this->content->eof();
+        return $this->bytes_read >= strlen($this->content);
     }
 
     /**
      * returns the current position within the file
      *
      * @return  int
-     * @deprecated  since 1.3.0
      */
     public function getBytesRead()
     {
-        return $this->content->bytesRead();
+        return $this->bytes_read;
     }
 
     /**
@@ -241,7 +238,24 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function seek($offset, $whence)
     {
-        return $this->content->seek($offset, $whence);
+        switch ($whence) {
+            case SEEK_CUR:
+                $this->bytes_read += $offset;
+                return true;
+
+            case SEEK_END:
+                $this->bytes_read = strlen($this->content) + $offset;
+                return true;
+
+            case SEEK_SET:
+                $this->bytes_read = $offset;
+                return true;
+
+            default:
+                return false;
+        }
+
+        return false;
     }
 
     /**
@@ -251,144 +265,63 @@ class vfsStreamFile extends vfsStreamAbstractContent
      */
     public function size()
     {
-        return $this->content->size();
+        return strlen($this->content);
     }
 
 
     /**
      * locks file for
      *
-     * @param   resource|vfsStreamWrapper $resource
      * @param   int  $operation
-     * @return  bool
+     * @return  vfsStreamFile
      * @since   0.10.0
      * @see     https://github.com/mikey179/vfsStream/issues/6
-     * @see     https://github.com/mikey179/vfsStream/issues/40
      */
-    public function lock($resource, $operation)
+    public function lock($operation)
     {
         if ((LOCK_NB & $operation) == LOCK_NB) {
-            $operation = $operation - LOCK_NB;
+            $this->lock = $operation - LOCK_NB;
+        } else {
+            $this->lock = $operation;
         }
 
-        // call to lock file on the same file handler firstly releases the lock
-        $this->unlock($resource);
-
-        if (LOCK_EX === $operation) {
-            if ($this->isLocked()) {
-                return false;
-            }
-
-            $this->setExclusiveLock($resource);
-        } elseif(LOCK_SH === $operation) {
-            if ($this->hasExclusiveLock()) {
-                return false;
-            }
-
-            $this->addSharedLock($resource);
-        }
-
-        return true;
-    }
-
-    /**
-     * Removes lock from file acquired by given resource
-     *
-     * @param   resource|vfsStreamWrapper $resource
-     * @see     https://github.com/mikey179/vfsStream/issues/40
-     */
-    public function unlock($resource) {
-        if ($this->hasExclusiveLock($resource)) {
-            $this->exclusiveLock = null;
-        }
-        if ($this->hasSharedLock($resource)) {
-            unset($this->sharedLock[$this->getResourceId($resource)]);
-        }
-    }
-
-    /**
-     * Set exlusive lock on file by given resource
-     *
-     * @param   resource|vfsStreamWrapper $resource
-     * @see     https://github.com/mikey179/vfsStream/issues/40
-     */
-    protected function setExclusiveLock($resource) {
-        $this->exclusiveLock = $this->getResourceId($resource);
-    }
-
-    /**
-     * Add shared lock on file by given resource
-     *
-     * @param   resource|vfsStreamWrapper $resource
-     * @see     https://github.com/mikey179/vfsStream/issues/40
-     */
-    protected function addSharedLock($resource) {
-        $this->sharedLock[$this->getResourceId($resource)] = true;
+        return $this;
     }
 
     /**
      * checks whether file is locked
      *
-     * @param   resource|vfsStreamWrapper $resource
      * @return  bool
      * @since   0.10.0
      * @see     https://github.com/mikey179/vfsStream/issues/6
-     * @see     https://github.com/mikey179/vfsStream/issues/40
      */
-    public function isLocked($resource = null)
+    public function isLocked()
     {
-        return $this->hasSharedLock($resource) || $this->hasExclusiveLock($resource);
+        return (LOCK_UN !== $this->lock);
     }
 
     /**
      * checks whether file is locked in shared mode
      *
-     * @param   resource|vfsStreamWrapper $resource
      * @return  bool
      * @since   0.10.0
      * @see     https://github.com/mikey179/vfsStream/issues/6
-     * @see     https://github.com/mikey179/vfsStream/issues/40
      */
-    public function hasSharedLock($resource = null)
+    public function hasSharedLock()
     {
-        if (null !== $resource) {
-            return isset($this->sharedLock[$this->getResourceId($resource)]);
-        }
-
-        return !empty($this->sharedLock);
-    }
-
-    /**
-     * Returns unique resource id
-     *
-     * @param   resource|vfsStreamWrapper $resource
-     * @return  string
-     * @see     https://github.com/mikey179/vfsStream/issues/40
-     */
-    public function getResourceId($resource) {
-        if (is_resource($resource)) {
-            $data = stream_get_meta_data($resource);
-            $resource = $data['wrapper_data'];
-        }
-
-        return spl_object_hash($resource);
+        return (LOCK_SH === $this->lock);
     }
 
     /**
      * checks whether file is locked in exclusive mode
      *
-     * @param   resource|vfsStreamWrapper $resource
      * @return  bool
      * @since   0.10.0
      * @see     https://github.com/mikey179/vfsStream/issues/6
-     * @see     https://github.com/mikey179/vfsStream/issues/40
      */
-    public function hasExclusiveLock($resource = null)
+    public function hasExclusiveLock()
     {
-        if (null !== $resource) {
-            return $this->exclusiveLock === $this->getResourceId($resource);
-        }
-
-        return null !== $this->exclusiveLock;
+        return (LOCK_EX === $this->lock);
     }
 }
+?>

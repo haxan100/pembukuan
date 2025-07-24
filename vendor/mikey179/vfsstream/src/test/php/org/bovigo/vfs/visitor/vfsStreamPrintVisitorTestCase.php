@@ -18,23 +18,23 @@ use org\bovigo\vfs\vfsStreamFile;
  * @see    https://github.com/mikey179/vfsStream/issues/10
  * @group  issue_10
  */
-class vfsStreamPrintVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamPrintVisitorTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
+     * @expectedException  \InvalidArgumentException
      */
     public function constructWithNonResourceThrowsInvalidArgumentException()
     {
-        $this->expectException(\InvalidArgumentException::class);
         new vfsStreamPrintVisitor('invalid');
     }
 
     /**
      * @test
+     * @expectedException  \InvalidArgumentException
      */
     public function constructWithNonStreamResourceThrowsInvalidArgumentException()
     {
-        $this->expectException(\InvalidArgumentException::class);
         new vfsStreamPrintVisitor(xml_parser_create());
     }
 
@@ -50,20 +50,6 @@ class vfsStreamPrintVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
                           $printVisitor->visitFile(vfsStream::newFile('bar.txt'))
         );
         $this->assertEquals("- bar.txt\n", $output->getContent());
-    }
-
-    /**
-     * @test
-     */
-    public function visitFileWritesBlockDeviceToStream()
-    {
-        $output       = vfsStream::newFile('foo.txt')
-                                       ->at(vfsStream::setup());
-        $printVisitor = new vfsStreamPrintVisitor(fopen('vfs://root/foo.txt', 'wb'));
-        $this->assertSame($printVisitor,
-                          $printVisitor->visitBlockDevice(vfsStream::newBlock('bar'))
-        );
-        $this->assertEquals("- [bar]\n", $output->getContent());
     }
 
     /**
@@ -100,3 +86,4 @@ class vfsStreamPrintVisitorTestCase extends \BC_PHPUnit_Framework_TestCase
         $this->assertEquals("- root\n  - test\n    - foo\n      - test.txt\n    - baz.txt\n  - foo.txt\n", file_get_contents('vfs://root/foo.txt'));
     }
 }
+?>

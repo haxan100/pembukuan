@@ -13,7 +13,7 @@ namespace org\bovigo\vfs;
  *
  * @since  0.9.0
  */
-class vfsStreamWrapperFileTimesTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamWrapperFileTimesTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * URL of foo.txt file
@@ -37,7 +37,7 @@ class vfsStreamWrapperFileTimesTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         vfsStream::setup()
                  ->lastModified(50)
@@ -139,7 +139,7 @@ class vfsStreamWrapperFileTimesTestCase extends \BC_PHPUnit_Framework_TestCase
                          ->lastAttributeModified(100);
         $fp = fopen($this->fooUrl, 'rb');
         $openTime = time();
-        sleep(2);
+        sleep(3);
         fread($fp, 1024);
         fclose($fp);
         $this->assertLessThanOrEqual($openTime, filemtime($this->fooUrl));
@@ -161,7 +161,7 @@ class vfsStreamWrapperFileTimesTestCase extends \BC_PHPUnit_Framework_TestCase
                          ->lastAttributeModified(100);
         $fp = fopen($this->fooUrl, 'wb');
         $openTime = time();
-        sleep(2);
+        sleep(3);
         fwrite($fp, 'test');
         fclose($fp);
         $this->assertLessThanOrEqual($openTime + 3, filemtime($this->fooUrl));
@@ -312,3 +312,4 @@ class vfsStreamWrapperFileTimesTestCase extends \BC_PHPUnit_Framework_TestCase
         $this->markTestSkipped('Changing file attributes via stream wrapper for self-defined streams is not supported by PHP.');
     }
 }
+?>

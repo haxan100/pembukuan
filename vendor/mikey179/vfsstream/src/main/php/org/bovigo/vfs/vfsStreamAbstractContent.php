@@ -61,12 +61,6 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * @type  int
      */
     protected $group;
-    /**
-     * path to to this content
-     *
-     * @type  string
-     */
-    private $parentPath;
 
     /**
      * constructor
@@ -76,7 +70,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      */
     public function __construct($name, $permissions = null)
     {
-        $this->name = "{$name}";
+        $this->name = $name;
         $time       = time();
         if (null === $permissions) {
             $permissions = $this->getDefaultPermissions() & ~vfsStream::umask();
@@ -115,7 +109,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      */
     public function rename($newName)
     {
-        $this->name = "{$newName}";
+        $this->name = $newName;
     }
 
     /**
@@ -148,7 +142,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * sets the last modification time of the stream content
      *
      * @param   int  $filemtime
-     * @return  $this
+     * @return  vfsStreamContent
      */
     public function lastModified($filemtime)
     {
@@ -170,7 +164,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * sets last access time of the stream content
      *
      * @param   int  $fileatime
-     * @return  $this
+     * @return  vfsStreamContent
      * @since   0.9
      */
     public function lastAccessed($fileatime)
@@ -194,7 +188,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * sets the last attribute modification time of the stream content
      *
      * @param   int  $filectime
-     * @return  $this
+     * @return  vfsStreamContent
      * @since   0.9
      */
     public function lastAttributeModified($filectime)
@@ -218,7 +212,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * adds content to given container
      *
      * @param   vfsStreamContainer  $container
-     * @return  $this
+     * @return  vfsStreamContent
      */
     public function at(vfsStreamContainer $container)
     {
@@ -230,7 +224,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * change file mode to given permissions
      *
      * @param   int  $permissions
-     * @return  $this
+     * @return  vfsStreamContent
      */
     public function chmod($permissions)
     {
@@ -314,7 +308,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * change owner of file to given user
      *
      * @param   int  $user
-     * @return  $this
+     * @return  vfsStreamContent
      */
     public function chown($user)
     {
@@ -348,7 +342,7 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
      * change owner group of file to given group
      *
      * @param   int  $group
-     * @return  $this
+     * @return  vfsStreamContent
      */
     public function chgrp($group)
     {
@@ -377,42 +371,5 @@ abstract class vfsStreamAbstractContent implements vfsStreamContent
     {
         return $this->group;
     }
-
-    /**
-     * sets parent path
-     *
-     * @param  string  $parentPath
-     * @internal  only to be set by parent
-     * @since   1.2.0
-     */
-    public function setParentPath($parentPath)
-    {
-        $this->parentPath = $parentPath;
-    }
-
-    /**
-     * returns path to this content
-     *
-     * @return  string
-     * @since   1.2.0
-     */
-    public function path()
-    {
-        if (null === $this->parentPath) {
-            return $this->name;
-        }
-
-        return $this->parentPath . '/' . $this->name;
-    }
-
-    /**
-     * returns complete vfsStream url for this content
-     *
-     * @return  string
-     * @since   1.2.0
-     */
-    public function url()
-    {
-        return vfsStream::url($this->path());
-    }
 }
+?>

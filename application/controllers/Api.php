@@ -206,7 +206,7 @@ class Api extends MY_Controller
 		$config['max_size'] = 2048;
 		$this->load->library('upload', $config);
 
-		if (!$this->upload->do_upload('file')) {
+		if (!$this->upload->do_upload('pdf_file')) {
 			return $this->ResAPI([], false, $this->upload->display_errors(), 400);
 		}
 
@@ -256,6 +256,7 @@ class Api extends MY_Controller
 		}
 
 		foreach ($items as $item) {
+			var_dump($items);die;
 			$this->db->insert('hp_transactions', [
 				'hp' => $item['hp'],
 				'imei' => $item['imei'],

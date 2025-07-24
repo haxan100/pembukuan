@@ -1,5 +1,9 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+// Di atas semua line, tepat setelah buka PHP tag
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +27,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$root = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
-$root .= str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
-$config['base_url'] = $root;
+$http = 'http' . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . '://';
+$url = str_replace("index.php", "", $_SERVER['SCRIPT_NAME']);
+$config['base_url'] = "$http" . $_SERVER['HTTP_HOST'] . $url;
+$config['base_url'] = 'http://31.25.235.140/pembukuan/';
+
+
 // $http = 'http' . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') ? 's' : '') . '://';
 // $url = str_replace("index.php", "", $_SERVER['SCRIPT_NAME']);
 // $config['base_url'] = "$http" . $_SERVER['SERVER_NAME'] . "" . $url;
@@ -41,7 +48,7 @@ $config['base_url'] = $root;
 | variable so that it is blank.
 |
 */
-$config['index_page'] = '';
+$config['index_page'] = 'index.php'; // <- jangan dikosongin dulu
 
 /*
 |--------------------------------------------------------------------------

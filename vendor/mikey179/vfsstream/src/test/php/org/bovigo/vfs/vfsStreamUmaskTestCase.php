@@ -15,12 +15,12 @@ namespace org\bovigo\vfs;
  * @group  umask
  * @since  0.8.0
  */
-class vfsStreamUmaskTestCase extends \BC_PHPUnit_Framework_TestCase
+class vfsStreamUmaskTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * set up test environment
      */
-    public function setUp(): void
+    public function setUp()
     {
         vfsStream::umask(0000);
     }
@@ -28,7 +28,7 @@ class vfsStreamUmaskTestCase extends \BC_PHPUnit_Framework_TestCase
     /**
      * clean up test environment
      */
-    public function tearDown(): void
+    public function tearDown()
     {
         vfsStream::umask(0000);
     }
@@ -146,7 +146,7 @@ class vfsStreamUmaskTestCase extends \BC_PHPUnit_Framework_TestCase
     {
         $root = vfsStream::setup();
         vfsStream::umask(0022);
-        mkdir(vfsStream::url('root/newdir'), 0000);
+        mkdir(vfsStream::url('root/newdir'), null);
         $this->assertEquals(0000, $root->getChild('newdir')->getPermissions());
     }
 
@@ -192,3 +192,4 @@ class vfsStreamUmaskTestCase extends \BC_PHPUnit_Framework_TestCase
         $this->assertEquals(0755, $root->getPermissions());
     }
 }
+?>
